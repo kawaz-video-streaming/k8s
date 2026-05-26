@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-processor
+  namespace: kawaz
+spec:
+  replicas: 0
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: media-processor
+  template:
+    metadata:
+      labels:
+        app: media-processor
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      nodeSelector:
+        cloud.google.com/gke-nodepool: gpu-pool
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Equal"
+          value: "present"
+          effect: "NoSchedule"
+        - key: "cloud.google.com/gke-spot"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+      initContainers:
+        - name: fix-tmp-permissions
+          image: busybox
+          command: ["sh", "-c", "chmod 777 /app/tmp"]
+          volumeMounts:
+            - name: tmp-workspace
+              mountPath: /app/tmp
+      volumes:
+        - name: tmp-workspace
+          persistentVolumeClaim:
+            claimName: media-processor-workspace
+      containers:
+        - name: media-processor
+          securityContext:
+            allowPrivilegeEscalation: false
+          image: ghcr.io/kawaz-video-streaming/media-processor:latest
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: tmp-workspace
+              mountPath: /app/tmp
+          envFrom:
+            - configMapRef:
+                name: media-processor-config
+            - secretRef:
+                name: media-processor-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: 11000m
+              memory: 10Gi
+              nvidia.com/gpu: "1"

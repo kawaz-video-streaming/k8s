@@ -1,0 +1,23 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: premium-rwo-regional
+provisioner: pd.csi.storage.gke.io
+parameters:
+  type: pd-ssd
+  replication-type: none    # <-- only change
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-processor-workspace
+  namespace: kawaz
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: premium-rwo-regional
+  resources:
+    requests:
+      storage: 100Gi

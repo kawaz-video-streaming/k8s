@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-processor
+  namespace: kawaz
+spec:
+  selector:
+    app: media-processor
+  ports:
+    - port: 8081
+      targetPort: 8081

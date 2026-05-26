@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kawaz-frontend
+  namespace: kawaz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kawaz-frontend
+  template:
+    metadata:
+      labels:
+        app: kawaz-frontend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: kawaz-frontend
+          image: ghcr.io/kawaz-video-streaming/kawaz-frontend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BACKEND_URL
+              value: http://kawaz-backend.kawaz.svc.cluster.local:8080
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

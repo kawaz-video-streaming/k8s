@@ -1,0 +1,37 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: media-processor-scaler
+  namespace: kawaz
+spec:
+  scaleTargetRef:
+    name: media-processor
+  minReplicaCount: 0
+  maxReplicaCount: 1
+  cooldownPeriod: 60
+  triggers:
+    - type: rabbitmq
+      metadata:
+        protocol: http
+        host: http://rabbitmq.kawaz.svc.cluster.local:15672
+        vhost: "/"
+        queueName: media-processor-convert
+        mode: QueueLength
+        value: "1"
+        includeUnacked: "true"
+      authenticationRef:
+        name: rabbitmq-auth
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: rabbitmq-auth
+  namespace: kawaz
+spec:
+  secretTargetRef:
+    - parameter: username
+      name: media-processor-secrets
+      key: RABBITMQ_USER
+    - parameter: password
+      name: media-processor-secrets
+      key: RABBITMQ_PASS

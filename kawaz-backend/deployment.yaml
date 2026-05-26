@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kawaz-backend
+  namespace: kawaz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kawaz-backend
+  template:
+    metadata:
+      labels:
+        app: kawaz-backend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: kawaz-backend
+          image: ghcr.io/kawaz-video-streaming/kawaz-backend:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: kawaz-backend-config
+            - secretRef:
+                name: kawaz-backend-secrets
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 1000Mi

@@ -28,13 +28,9 @@ spec:
           operator: "Equal"
           value: "true"
           effect: "NoSchedule"
-      initContainers:
-        - name: fix-tmp-permissions
-          image: busybox
-          command: ["sh", "-c", "chmod 777 /app/tmp"]
-          volumeMounts:
-            - name: tmp-workspace
-              mountPath: /app/tmp
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: OnRootMismatch
       volumes:
         - name: tmp-workspace
           persistentVolumeClaim:

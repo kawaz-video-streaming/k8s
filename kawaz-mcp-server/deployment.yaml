@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kawaz-mcp-server
+  namespace: kawaz
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kawaz-mcp-server
+  template:
+    metadata:
+      labels:
+        app: kawaz-mcp-server
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: kawaz-mcp-server
+          image: ghcr.io/kawaz-video-streaming/kawaz-mcp-server:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: kawaz-mcp-server-config
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

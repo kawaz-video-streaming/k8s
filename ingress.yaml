@@ -4,6 +4,7 @@ metadata:
   name: kawaz-ingress
   namespace: kawaz
   annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/proxy-body-size: "5g"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
@@ -11,7 +12,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: yourdomain.com
+    - host: kawazplus.com
       http:
         paths:
           - path: /
@@ -19,5 +20,15 @@ spec:
             backend:
               service:
                 name: kawaz-frontend
+                port:
+                  number: 8080
+    - host: mcp.kawazplus.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kawaz-mcp-server
                 port:
                   number: 8080

@@ -32,3 +32,65 @@ spec:
                 name: kawaz-mcp-server
                 port:
                   number: 8080
+    - host: api.kawazplus.com
+      http:
+        paths:
+          - path: /api-docs
+            pathType: Prefix
+            backend:
+              service:
+                name: kawaz-backend
+                port:
+                  number: 8080
+    - host: media-processor.kawazplus.com
+      http:
+        paths:
+          - path: /api-docs
+            pathType: Prefix
+            backend:
+              service:
+                name: media-processor
+                port:
+                  number: 8081
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kawaz-backend-docs-redirect
+  namespace: kawaz
+  annotations:
+    nginx.ingress.kubernetes.io/permanent-redirect: https://api.kawazplus.com/api-docs
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.kawazplus.com
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: kawaz-backend
+                port:
+                  number: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: media-processor-docs-redirect
+  namespace: kawaz
+  annotations:
+    nginx.ingress.kubernetes.io/permanent-redirect: https://media-processor.kawazplus.com/api-docs
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: media-processor.kawazplus.com
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: media-processor
+                port:
+                  number: 8081
